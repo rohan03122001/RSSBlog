@@ -12,10 +12,12 @@ import (
 	"github.com/google/uuid"
 )
 
-const CreateUsers = `-- name: CreateUsers :one
-INSERT INTO users (ID, created_at, updated_at, name)
-VALUES($1, $2, $3, $4)
-RETURNING id, created_at, updated_at, name
+const createUsers = `-- name: CreateUsers :one
+INSERT INTO users (ID, created_at, updated_at, name, api_key)
+VALUES($1, $2, $3, $4, 
+    encode(sha256(random()::text::bytea), 'hex')
+)
+RETURNING id, created_at, updated_at, name, api_key
 `
 
 type CreateUsersParams struct {
@@ -26,7 +28,7 @@ type CreateUsersParams struct {
 }
 
 func (q *Queries) CreateUsers(ctx context.Context, arg CreateUsersParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, CreateUsers,
+	row := q.db.QueryRowContext(ctx, createUsers,
 		arg.ID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -38,6 +40,7 @@ func (q *Queries) CreateUsers(ctx context.Context, arg CreateUsersParams) (User,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
+		&i.ApiKey,
 	)
 	return i, err
 }
