@@ -6,4 +6,4 @@ VALUES($1, $2, $3, $4,
 RETURNING *;
 
 -- name: GetUserByAPIKey :one
-Select * from users WHERE api_key=$1
+Select * from users WHERE api_key=$1;
