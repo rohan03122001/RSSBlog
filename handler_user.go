@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	//"github.com/rohan03122001/RSSBlog/internal/database"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/rohan03122001/RSSBlog/internal/database"
 )
 
 func (apicfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	type parameters struct {
-		Name string `name`
+		Name string `json:"name"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -24,5 +27,13 @@ func (apicfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	}
 
 	
+
+	user, err := apicfg.DB.CreateUsers(r.Context(), database.CreateUsersParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		Name:      params.Name,
+	})
+
 	respondWithJSON(w, 200, struct{}{})
 }
