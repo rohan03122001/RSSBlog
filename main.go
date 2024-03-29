@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -33,12 +34,14 @@ func main() {
 		log.Fatal("DATABASE ERROR")
 	}
 
-	db, err := sql.Open("postgres", dbURL)
-	dbQueries := database.New(db)
+	conn, err := sql.Open("postgres", dbURL)
+
+	db := database.New(conn)
 
 	apiCfg := apiConfig{
-		DB: dbQueries,
+		DB: db,
 	}
+	go startScraping(db, 10, time.Minute)
 
 	router := chi.NewRouter()
 	srv := &http.Server{
@@ -69,6 +72,8 @@ func main() {
 	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreatefeedFollows))
 	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetfeedFollows))
 	v1Router.Delete("/feed_follows/{feed_followID}", apiCfg.middlewareAuth(apiCfg.handlerDeletefeedFollow))
+
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetPostsForUser))
 
 	router.Mount("/v1", v1Router)
 
