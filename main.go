@@ -19,7 +19,7 @@ type apiConfig struct {
 }
 
 func main() {
-	
+
 	fmt.Println("Hello World")
 
 	godotenv.Load(".env")
@@ -62,8 +62,14 @@ func main() {
 
 	v1Router.Get("/err", handlerError)
 	v1Router.Post("/users", apiCfg.handlerCreateUser)
-	v1Router.Get("/users", apiCfg.handlerGetUser)
-	
+	v1Router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
+
+	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreatefeed))
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)
+	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreatefeedFollows))
+	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetfeedFollows))
+	v1Router.Delete("/feed_follows/{feed_followID}", apiCfg.middlewareAuth(apiCfg.handlerDeletefeedFollow))
+
 	router.Mount("/v1", v1Router)
 
 	log.Printf("Server Starting on %v", portString)
